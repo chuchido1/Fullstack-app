@@ -1,25 +1,64 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import "./UsersPage.css";
 import ModalForm from "./components/ModalForm";
 import { Modal } from "react-bootstrap";
+import { getUsers, addUser, editUser, deleteUser as delUser } from "./usersapi";
 
 const UsersPage = () => {
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: "Jesus",
-      lastName: "Arriaga",
-      email: "chuchido1@hotmail.com",
-    },
-    {
-      id: 2,
-      name: "Juan",
-      lastName: "Perez",
-      email: "juanp@gmail.com",
-    },
-  ]);
+  // const [users, setUsers] = useState([
+  //   {
+  //     id: 1,
+  //     name: "Jesus",
+  //     lastName: "Arriaga",
+  //     email: "chuchido1@hotmail.com",
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Juan",
+  //     lastName: "Perez",
+  //     email: "juanp@gmail.com",
+  //   },
+  // ]);
+
+  const [users, setUsers] = useState([]);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await getUsers();
+      setUsers(response.data);
+    } catch (err) {}
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const postUser = async (user) => {
+    try {
+      const response = await addUser(user);
+      setUsers(response.data);
+    } catch (err) {}
+  };
+
+  const putUser = async (user) => {
+    try {
+      const response = await editUser(user);
+      setUsers((prevUsers) => {
+        return prevUsers
+          .map((e) => (e.id === user.id ? user : e))
+          .sort((a, b) => a.id - b.id);
+      });
+    } catch (err) {}
+  };
+
+  const deleteUser = async (id) => {
+    try {
+      const response = await delUser(id);
+      setUsers(response.data);
+    } catch (err) {}
+  };
 
   const [showDelete, setShowDelete] = useState(false);
   const [userToDelete, setUserToDelete] = useState({});
@@ -37,22 +76,12 @@ const UsersPage = () => {
   const handleClose = (userToSave, buttonPressed) => {
     if (buttonPressed === "Save") {
       if (userToSave.id !== -1) {
-        setUsers((prevUsers) => {
-          return prevUsers
-            .map((e) => (e.id === userToSave.id ? userToSave : e))
-            .sort((a, b) => a.id - b.id);
-        });
+        putUser(userToSave);
       } else {
-        const ids = new Set(users.map((e) => e.id));
-        for (let i = 1; i < ids.size + 2; i++) {
-          if (!ids.has(i)) {
-            userToSave.id = i;
-            break;
-          }
-        }
-        setUsers((prevUsers) =>
-          [...prevUsers, userToSave].sort((a, b) => a.id - b.id)
-        );
+        // useEffect(() => {
+        //   postUser(userToSave);
+        // }, []);
+        postUser(userToSave);
       }
     }
     setShow(false);
@@ -66,9 +95,7 @@ const UsersPage = () => {
 
   const handleDelete = (id) => {
     setShowDelete(false);
-    setUsers((prevUsers) => {
-      return prevUsers.filter((user) => user.id !== id);
-    });
+    deleteUser(id);
   };
 
   const handleDeleteOpen = (id) => {

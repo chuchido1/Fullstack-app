@@ -4,18 +4,10 @@ using backend_exam.Services.ItemService;
 using backend_exam.Data;
 using Microsoft.EntityFrameworkCore;
 
-var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";//CORS
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddCors(options => //CORS
-{
-  options.AddPolicy(name: MyAllowSpecificOrigins,
-                    policy =>
-                    {
-                      policy.AllowAnyOrigin();
-                    });
-});
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -37,7 +29,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors(MyAllowSpecificOrigins);//CORS
+app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
 app.UseAuthorization();
 

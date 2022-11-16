@@ -1,24 +1,10 @@
-import { React, useState, useRef } from "react";
+import { React, useState, useRef, useEffect } from "react";
 import { Modal, Table, Button, Form } from "react-bootstrap";
+import { getItems, addItem, editItem, deleteItem as delItem } from "./itemsapi";
 import "./ItemsPage.css";
 
 const ItemsPage = () => {
-  const [items, setItems] = useState([
-    {
-      id: 1,
-      userId: 2,
-      item: "TV",
-      description: "55' 4K Samsung",
-      quantity: 3,
-    },
-    {
-      id: 2,
-      userId: 1,
-      item: "Videogame Console",
-      description: "Xbox Series X 1TB",
-      quantity: 5,
-    },
-  ]);
+  const [items, setItems] = useState([]);
 
   const [showAddEdit, setShowAddEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
@@ -30,13 +16,49 @@ const ItemsPage = () => {
   const itemRef = useRef();
   const descriptionRef = useRef();
 
+  const fetchItems = async () => {
+    try {
+      const response = await getItems();
+      setItems(response.data);
+    } catch (err) {}
+  };
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
+  const postItem = async (item) => {
+    try {
+      const response = await addItem(item);
+      setItems(response.data);
+    } catch (err) {}
+  };
+
+  const putItem = async (item) => {
+    try {
+      const response = await editItem(item);
+      setItems((prevItems) => {
+        return prevItems
+          .map((e) => (e.id === item.id ? item : e))
+          .sort((a, b) => a.id - b.id);
+      });
+    } catch (err) {}
+  };
+
+  const deleteItem = async (id) => {
+    try {
+      const response = await delItem(id);
+      setItems(response.data);
+    } catch (err) {}
+  };
+
   const handleAddItem = () => {
     setFormAction(1);
     setShowAddEdit(true);
     setCurrentItem({
       id: -1,
       userId: "",
-      item: "",
+      itemName: "",
       description: "",
       quantity: 0,
     });
@@ -46,6 +68,7 @@ const ItemsPage = () => {
     setShowAddEdit(true);
     setFormAction(2);
     setCurrentItem(items.find((item) => item.id === id));
+    console.log(items);
   };
   const handleAddEdit = () => {
     let itemId = currentItem.id;
@@ -55,36 +78,22 @@ const ItemsPage = () => {
     const item = itemRef.current.value;
     const description = descriptionRef.current.value;
 
+    console.log(item);
+
     const itemToSave = {
       id: itemId,
       userId: userId,
-      item: item,
+      itemName: item,
       description: description,
       quantity: quantity,
     };
 
     if (formAction === 1) {
       //Add item
-      const ids = new Set(items.map((item) => item.id));
-
-      for (let i = 1; i <= ids.size + 1; i++) {
-        if (!ids.has(i)) {
-          itemToSave.id = i;
-          break;
-        }
-      }
-      setItems((prevItems) => {
-        return [...prevItems, itemToSave].sort(
-          (itemA, itemB) => itemA.id - itemB.id
-        );
-      });
+      postItem(itemToSave);
     } else {
       //Edit item
-      setItems((prevItems) =>
-        prevItems.map((item) =>
-          item.id === currentItem.id ? itemToSave : item
-        )
-      );
+      putItem(itemToSave);
     }
 
     setShowAddEdit(false);
@@ -95,9 +104,7 @@ const ItemsPage = () => {
     setCurrentItem(items.find((item) => item.id === id));
   };
   const handleDelete = () => {
-    setItems((prevItems) =>
-      prevItems.filter((item) => item.id !== currentItem.id)
-    );
+    deleteItem(currentItem.id);
     setShowDelete(false);
   };
 
@@ -148,7 +155,7 @@ const ItemsPage = () => {
               <Form.Control
                 type="text"
                 placeholder="Enter the name of the item."
-                defaultValue={currentItem.item}
+                defaultValue={currentItem.itemName}
                 ref={itemRef}
               />
             </Form.Group>
@@ -215,7 +222,7 @@ const ItemsPage = () => {
               <tr key={item.id}>
                 <td>{item.id}</td>
                 <td>{item.userId}</td>
-                <td>{item.item}</td>
+                <td>{item.itemName}</td>
                 <td>{item.description}</td>
                 <td>{item.quantity}</td>
                 <td>

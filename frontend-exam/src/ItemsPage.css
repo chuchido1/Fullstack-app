@@ -1,0 +1,14 @@
+.add-item {
+  float: right;
+  margin: 25px;
+}
+
+.edit-delete-button {
+  margin: 0px 10px;
+}
+
+#items-title {
+  text-align: center;
+  font-weight: bold;
+  font-size: 75px;
+}

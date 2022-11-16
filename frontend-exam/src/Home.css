@@ -1,0 +1,22 @@
+h1 {
+  text-align: center;
+  font-size: 75px;
+}
+span {
+  font-weight: bold;
+  font-size: 100px;
+}
+
+img {
+  border-radius: 50%;
+  width: 40%;
+  box-shadow: 25px 25px 15px gray;
+  background-color: darksalmon;
+}
+
+.pokemon-img {
+  text-align: center;
+  margin: 0px auto;
+  background-color: beige;
+  border-radius: 50%;
+}
